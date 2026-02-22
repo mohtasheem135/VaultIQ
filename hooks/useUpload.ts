@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { randomUUID } from "crypto";
 import { validateFile } from "@/lib/validations/document.schema";
 import { documentKeys } from "./useDocuments";
 import type { UploadQueueItem } from "@/types/app.types";
@@ -49,7 +48,6 @@ export function useUpload() {
 
         updateItem(item.id, { status: "done", progress: 100 });
 
-        // Refresh the documents list
         queryClient.invalidateQueries({ queryKey: documentKeys.lists() });
 
         toast.success(`"${item.file.name}" is ready`, {
@@ -78,7 +76,7 @@ export function useUpload() {
         }
 
         validItems.push({
-          id: `upload-${randomUUID()}`,
+          id: `upload-${crypto.randomUUID()}`,  // ✅ Web Crypto API — works in browser
           file,
           category_id: categoryId,
           status: "pending",
@@ -90,7 +88,6 @@ export function useUpload() {
 
       setQueue((prev) => [...prev, ...validItems]);
 
-      // Start uploading each file sequentially to avoid rate limiting
       validItems.reduce((chain, item) => {
         return chain.then(() => uploadFile(item));
       }, Promise.resolve());
