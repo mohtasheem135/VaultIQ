@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Trash2, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import {
+  FileText,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoryBadge } from "@/components/shared/CategoryBadge";
 import { formatFileSize } from "@/lib/utils/file-helpers";
@@ -53,12 +60,18 @@ export function DocumentCard({ document: doc }: DocumentCardProps) {
     setConfirmDelete(false);
   };
 
+  const handleOpen = () => {
+    window.open(`/documents/${doc.id}`, "_blank");
+  };
+
   return (
     <>
-      <div className={cn(
-        "group flex items-start gap-3 rounded-lg border bg-background p-3.5 transition-colors hover:border-border/80",
-        doc.status === "failed" && "border-destructive/20 bg-destructive/5"
-      )}>
+      <div
+        className={cn(
+          "group flex items-start gap-3 rounded-lg border bg-background p-3.5 transition-colors hover:border-border/80",
+          doc.status === "failed" && "border-destructive/20 bg-destructive/5"
+        )}
+      >
         {/* File icon */}
         <div className="mt-0.5 shrink-0 h-9 w-9 rounded-lg bg-muted flex items-center justify-center">
           <FileText className="h-4.5 w-4.5 text-muted-foreground" />
@@ -71,14 +84,10 @@ export function DocumentCard({ document: doc }: DocumentCardProps) {
           </p>
 
           <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
-            {/* Category */}
             <CategoryBadge category={doc.category ?? null} size="sm" />
-
-            {/* Meta */}
             <span className="text-xs text-muted-foreground">
               {formatFileSize(doc.file_size)}
             </span>
-
             {doc.status === "ready" && (
               <span className="text-xs text-muted-foreground">
                 {doc.chunk_count} chunks
@@ -88,7 +97,9 @@ export function DocumentCard({ document: doc }: DocumentCardProps) {
 
           {/* Status */}
           <div className="flex items-center gap-1.5">
-            <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", statusConfig.className)} />
+            <StatusIcon
+              className={cn("h-3.5 w-3.5 shrink-0", statusConfig.className)}
+            />
             <span className={cn("text-xs font-medium", statusConfig.className)}>
               {statusConfig.label}
             </span>
@@ -100,17 +111,34 @@ export function DocumentCard({ document: doc }: DocumentCardProps) {
           </div>
         </div>
 
-        {/* Delete button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-          onClick={() => setConfirmDelete(true)}
-          disabled={deleteDocument.isPending}
-          aria-label={`Delete ${doc.file_name}`}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        {/* Action buttons — visible on hover */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          {/* Open in new tab — only for ready documents */}
+          {doc.status === "ready" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-indigo-500"
+              onClick={handleOpen}
+              aria-label={`Open ${doc.file_name}`}
+              title="Open document"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          )}
+
+          {/* Delete */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+            onClick={() => setConfirmDelete(true)}
+            disabled={deleteDocument.isPending}
+            aria-label={`Delete ${doc.file_name}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>

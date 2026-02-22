@@ -1,6 +1,7 @@
 "use client";
 
-import { FileText, Layers } from "lucide-react";
+import { FileText, Layers, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CategoryBadge } from "@/components/shared/CategoryBadge";
 import { SimilarityBadge } from "./SimilarityBadge";
 import { cn } from "@/lib/utils/cn";
@@ -12,7 +13,6 @@ type SearchResultCardProps = {
   rank: number;
 };
 
-// Highlights query terms in the excerpt text
 function HighlightedExcerpt({
   text,
   query,
@@ -23,11 +23,15 @@ function HighlightedExcerpt({
   const terms = query
     .trim()
     .split(/\s+/)
-    .filter((t) => t.length > 2) // skip short words
-    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")); // escape regex
+    .filter((t) => t.length > 2)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
 
   if (!terms.length) {
-    return <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{text}</p>;
+    return (
+      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+        {text}
+      </p>
+    );
   }
 
   const regex = new RegExp(`(${terms.join("|")})`, "gi");
@@ -52,6 +56,10 @@ function HighlightedExcerpt({
 }
 
 export function SearchResultCard({ result, query, rank }: SearchResultCardProps) {
+  const handleOpen = () => {
+    window.open(`/documents/${result.document_id}`, "_blank");
+  };
+
   return (
     <div
       className={cn(
@@ -79,8 +87,19 @@ export function SearchResultCard({ result, query, rank }: SearchResultCardProps)
           </div>
         </div>
 
-        <div className="shrink-0">
+        {/* Right side — badge + open button */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <SimilarityBadge score={result.similarity} />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-indigo-500"
+            onClick={handleOpen}
+            aria-label={`Open ${result.file_name} in new tab`}
+            title="Open document"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
